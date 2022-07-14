@@ -1,14 +1,39 @@
-import React from "react";
+import React, { PropsWithChildren } from "react";
+import "./Button.css";
 
-type ButtonProps = {
-    text: string;
-    padding: string;
-    backgroundColor: string;
-
+export type ButtonProps = {
+  /** Disable the button */
+  isDisabled?: boolean;
+  padding?: string;
+  margin?: string;
+  backgroundColor?: string;
+  textColor?: string;
+  onClick?: (event: any) => void;
+  type?: "submit" | "reset" | "button" | undefined;
 };
 
-export const Button: React.FC<ButtonProps> = ({ backgroundColor }) => {
-    // const { permissions } = useMessageContext();
-
-    return <button style={{ backgroundColor }} />;
+export const Button: React.FC<PropsWithChildren<ButtonProps>> = ({
+  children,
+  onClick,
+  type = "submit",
+  backgroundColor = "dodgerblue",
+  textColor = "white",
+  isDisabled,
+  padding,
+  margin,
+}) => {
+  // const { permissions } = useMessageContext();
+  return (
+    <button
+      onClick={onClick}
+      className="button"
+      type={type}
+      style={{ backgroundColor, color: textColor, padding, margin }}
+      disabled={isDisabled}
+      tabIndex={isDisabled ? -1 : undefined}
+      aria-disabled={isDisabled}
+    >
+      <>{children}</>
+    </button>
+  );
 };

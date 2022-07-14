@@ -1,38 +1,54 @@
-import React, { PropsWithChildren } from "react";
-import "./Button.css";
+import React, { HTMLInputTypeAttribute } from "react";
+import "./Input.css";
 
-export type ButtonProps = {
-  /** Disable the button */
-  isDisabled?: boolean;
-  /** Switch to a loading state */
-  isLoading?: boolean;
-  /** Maintain the active state */
-  /** The shape of the button */
-  isRounded?: boolean;
-  padding?: string;
-  backgroundColor?: string;
-  textColor?: string;
+export type InputProps = {
+  value: string;
+  id: string;
+  type: HTMLInputTypeAttribute;
+  placeholder?: string;
+  label: string;
+  pattern?: string;
+  min?: string;
+  onChange: (newData: Record<string, string>) => void;
+  hasError: boolean;
 };
 
-export const Button: React.FC<PropsWithChildren<ButtonProps>> = ({
-  children,
-  padding,
-  backgroundColor = "dodgerblue",
-  textColor = "white",
-  isDisabled,
-  isLoading,
+export const Input: React.FC<InputProps> = ({
+  type,
+  placeholder,
+  label,
+  value,
+  id,
+  pattern,
+  min = 0,
+  onChange,
+  hasError,
 }) => {
-  // const { permissions } = useMessageContext();
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    onChange({ [id]: event.target.value });
+  };
+
+  console.log('Input value', value);
+
   return (
-    <button
-      className="button"
-      disabled={isDisabled || isLoading}
-      tabIndex={isDisabled || isLoading ? -1 : undefined}
-      aria-disabled={isDisabled || isLoading}
-      aria-busy={isLoading}
-      style={{ backgroundColor, color: textColor, padding }}
-    >
-      <>{children}</>
-    </button>
+    <div className={`input-group ${hasError ? "input-group--error" : ""}`}>
+      <div className="input-group__input">
+        <label className="input-group__label" htmlFor={id}>
+          {label}:
+        </label>
+
+        <input
+          placeholder={placeholder}
+          type={type}
+          value={value ?? ''}
+          onChange={handleChange}
+          className="form-control"
+          pattern={pattern}
+          id={id}
+          min={min}
+        />
+      </div>
+      {hasError && <div className="input-group__alert"><span>{label} is invalid</span></div>}
+    </div>
   );
 };

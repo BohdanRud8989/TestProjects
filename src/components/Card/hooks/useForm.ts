@@ -1,53 +1,66 @@
-import { useCallback, useEffect, useState } from 'react';
-import { ApolloError, useApolloClient } from '@apollo/client';
-import { ChatAssetsQuery, ChatAssetsQueryVariables, ChatAssetType } from '../../../types/generated/graphql';
-import { ChatAssetsQueryDefinition } from '../../AssetList';
-import { log } from '../../../utils/log';
-import { EventIds } from '../../../constants';
+import { useCallback, useEffect, useState } from "react";
 
-export const useSubmissions = (channelId: string, canSeeSubmissions: boolean) => {
-    const [error, setError] = useState<ApolloError | undefined>(undefined);
-    const [loading, setLoading] = useState(false);
-    const [totalAudioSubmissions, setTotalAudioSubmissions] = useState<number | undefined>(undefined);
-    const apolloClient = useApolloClient();
-    const refetchTotalAudioSubmissions = useCallback(
-        async (channelId: string): Promise<void> => {
-            try {
-                setLoading(true);
-                setError(undefined);
+export const useForm = (
+  fields: Record<string, { isValid: (value: string) => boolean }>
+) => {
+  const [errors, setErrors] = useState<Record<string, boolean>>({});
+  const [data, setData] = useState<Record<string, string>>({});
+  const [isFormValid, setIsFormValid] = useState(false);
 
-                const response = await apolloClient.query<ChatAssetsQuery, ChatAssetsQueryVariables>({
-                    query: ChatAssetsQueryDefinition,
-                    variables: {
-                        channelId: channelId,
-                        first: 1,
-                        assetTypes: [ChatAssetType.Audio],
-                        search: '',
-                    },
-                    fetchPolicy: 'network-only',
-                });
+  const setDataCallback = useCallback(
+    (newData: Record<string, string>, replace: boolean = false): void =>
+      setData((currentData: Record<string, string>) => {
+        return {
+          ...(replace ? {} : currentData),
+          ...newData,
+        };
+      }),
+    [setData]
+  );
 
-                const totalAudioSubmissions = response.data?.chatAssets?.pageInfo?.totalRecords;
-                setTotalAudioSubmissions(totalAudioSubmissions);
+  const setErrorsCallback = useCallback(
+    (errors: Record<string, boolean>): void => setErrors(errors),
+    [setErrors]
+  );
 
-                setLoading(false);
-            } catch (error) {
-                if (error instanceof ApolloError) {
-                    setError(error);
-                }
-                log.error('Failed to get audio submissions', EventIds.GetAudioSubmissionsError, error, {
-                    channelId,
-                });
-            }
-        },
-        [apolloClient],
-    );
-
-    useEffect(() => {
-        if (channelId && canSeeSubmissions) {
-            refetchTotalAudioSubmissions(channelId);
+  const validateFormCallback = useCallback(
+    (data: Record<string, string>): Record<string, boolean> => {
+      const errors = Object.entries(data).reduce((prevData, [key, value]) => {
+        if (!fields[key].isValid(value)) {
+          prevData[key] = true;
         }
-    }, [channelId, canSeeSubmissions, refetchTotalAudioSubmissions]);
+        return prevData;
+      }, {} as Record<string, boolean>);
+      return errors;
+    },
+    [fields]
+  );
 
-    return { error, loading, totalAudioSubmissions, refetchTotalAudioSubmissions };
+  const areAllFieldsFilledIn = (
+    fields: Record<string, { isValid: (value: string) => boolean }>,
+    data: Record<string, string>
+  ): boolean => Object.keys(fields).every((key: string) => !!data[key]);
+
+  useEffect(() => {
+    if (data && !Object.entries(data).every(([, value]) => value === "")) {
+      const errors = validateFormCallback(data);
+      setErrors(errors);
+    }
+  }, [data, setErrors, validateFormCallback]);
+
+  useEffect(() => {
+    if (Object.keys(errors).length > 0 || !areAllFieldsFilledIn(fields, data)) {
+      setIsFormValid(false);
+    } else {
+      setIsFormValid(true);
+    }
+  }, [errors, fields, data, setIsFormValid]);
+
+  return {
+    errors,
+    setErrors: setErrorsCallback,
+    data,
+    setData: setDataCallback,
+    isFormValid,
+  };
 };
