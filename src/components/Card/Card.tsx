@@ -17,13 +17,11 @@ export const Card: React.FC<CardProps> = ({ backgroundColor, onAddUser }) => {
     useForm(FIELDS_OPTIONS);
 
   const clearForm = () => {
-    debugger;
     setData({}, true);
     setErrors({});
   };
 
   const handleSubmit = () => {
-    debugger;
     if (isFormValid) {
       onAddUser(data);
       clearForm();

@@ -25,8 +25,7 @@ export const FIELDS: (Omit<InputProps, "value" | "hasError" | "onChange"> & {
     id: "email",
     label: "Email",
     placeholder: "Email",
-    isValid: (email: string) =>
-      !!email && (email.match(/@/g) || []).length > 0,
+    isValid: (email: string) => !!email && (email.match(/@/g) || []).length > 0,
   },
   {
     type: "number",
@@ -50,8 +49,3 @@ export const FIELDS_OPTIONS = FIELDS.reduce((prevFields, { id, isValid }) => {
   prevFields[id] = { isValid };
   return prevFields;
 }, {} as Record<string, { isValid: (value: string) => boolean }>);
-
-export const FIELDS_DEFAULT_VALUES = FIELDS.reduce((prevFields, { id }) => {
-  prevFields[id] = "";
-  return prevFields;
-}, {} as Record<string, string>);

@@ -28,8 +28,6 @@ export const Input: React.FC<InputProps> = ({
     onChange({ [id]: event.target.value });
   };
 
-  console.log('Input value', value);
-
   return (
     <div className={`input-group ${hasError ? "input-group--error" : ""}`}>
       <div className="input-group__input">

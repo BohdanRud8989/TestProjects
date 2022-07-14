@@ -13,7 +13,6 @@ export const FormFields: React.FC<FormFieldsProps> = ({
   errors,
   data,
 }) => {
-  console.log('FormFields data', data);
   return (
     <form>
       {FIELDS.map(({ type, id, label, placeholder, min }) => {
